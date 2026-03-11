@@ -1,24 +1,23 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
-
-import { useColorScheme } from '@/hooks/use-color-scheme';
-
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+import { Stack } from "expo-router";
+import { useAuthStore } from "@/store/auth.store";
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+    const isLoggedIn = useAuthStore((state) => state.isAuthenticated);
+    return (
+        <Stack>
+            <Stack.Protected guard={!isLoggedIn}>
+                <Stack.Screen name="auth/login"  options={{ headerShown: false, animation: "slide_from_left"  }} />
+                <Stack.Screen name="auth/signup" options={{ headerShown: false, animation: "slide_from_right" }} />
+            </Stack.Protected>
 
-  return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
-  );
+            <Stack.Protected guard={isLoggedIn}>
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            </Stack.Protected>
+
+            {/* Modals — always registered so the navigator knows about them */}
+            <Stack.Screen name="modals/destination" options={{ headerShown: false, presentation: "modal" }} />
+            <Stack.Screen name="modals/confirm"      options={{ headerShown: false, presentation: "modal" }} />
+            <Stack.Screen name="modals/booked"       options={{ headerShown: false, presentation: "modal" }} />
+        </Stack>
+    );
 }
